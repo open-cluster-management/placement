@@ -10,7 +10,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Getting started
 
-run `make build` to build the binary
+Run `make build` to build the binary
 
 - Check the [Security guide](SECURITY.md) if you need to report a security issue.
 
