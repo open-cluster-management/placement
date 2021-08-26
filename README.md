@@ -17,3 +17,4 @@ Run `make build` to build the binary
 ## References
 
 - The `placement` is part of the `open-cluster-management` community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io).
+
