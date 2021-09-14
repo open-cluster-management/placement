@@ -24,6 +24,7 @@ var _ = ginkgo.Describe("Placement", func() {
 	var namespace string
 	var placementName string
 	var clusterSet1Name string
+	var managedClusterNames []string
 	var suffix string
 	var err error
 
@@ -32,6 +33,7 @@ var _ = ginkgo.Describe("Placement", func() {
 		namespace = fmt.Sprintf("ns-%s", suffix)
 		placementName = fmt.Sprintf("placement-%s", suffix)
 		clusterSet1Name = fmt.Sprintf("clusterset-%s", suffix)
+		managedClusterNames = make([]string, 10)
 
 		// create testing namespace
 		ns := &corev1.Namespace{
@@ -44,6 +46,18 @@ var _ = ginkgo.Describe("Placement", func() {
 	})
 
 	ginkgo.AfterEach(func() {
+		ginkgo.By("Delete managedclusterset")
+		err = clusterClient.ClusterV1alpha1().ManagedClusterSets().Delete(context.Background(), clusterSet1Name, metav1.DeleteOptions{})
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		ginkgo.By("Delete managedclusters")
+		for _, mcName := range managedClusterNames {
+			if len(mcName) > 0 {
+				err = clusterClient.ClusterV1().ManagedClusters().Delete(context.Background(), mcName, metav1.DeleteOptions{})
+				gomega.Expect(err).ToNot(gomega.HaveOccurred())
+			}
+		}
+
 		err := kubeClient.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
 	})
@@ -143,8 +157,11 @@ var _ = ginkgo.Describe("Placement", func() {
 					},
 				},
 			}
-			_, err = clusterClient.ClusterV1().ManagedClusters().Create(context.Background(), cluster, metav1.CreateOptions{})
+			var newCluster *clusterapiv1.ManagedCluster
+			newCluster, err = clusterClient.ClusterV1().ManagedClusters().Create(context.Background(), cluster, metav1.CreateOptions{})
 			gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+			managedClusterNames = append(managedClusterNames, newCluster.Name)
 		}
 	}
 
