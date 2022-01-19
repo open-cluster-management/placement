@@ -171,7 +171,7 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
-# github.com/open-cluster-management/api v0.0.0-20210506014040-cc5aa104d1e1
+# github.com/open-cluster-management/api v0.0.0-20210506014040-cc5aa104d1e1 => open-cluster-management.io/api v0.0.0-20210506014040-cc5aa104d1e1
 ## explicit; go 1.15
 github.com/open-cluster-management/api/client/cluster/clientset/versioned
 github.com/open-cluster-management/api/client/cluster/clientset/versioned/fake
@@ -976,3 +976,4 @@ sigs.k8s.io/structured-merge-diff/v4/value
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 # github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1
+# github.com/open-cluster-management/api => open-cluster-management.io/api v0.0.0-20210506014040-cc5aa104d1e1

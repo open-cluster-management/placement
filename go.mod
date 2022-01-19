@@ -2,7 +2,10 @@ module github.com/open-cluster-management/placement
 
 go 1.17
 
-replace github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1 // ensure compatible between controller-runtime and kube-openapi
+replace (
+	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1 // ensure compatible between controller-runtime and kube-openapi
+	github.com/open-cluster-management/api => open-cluster-management.io/api v0.0.0-20210506014040-cc5aa104d1e1
+)
 
 require (
 	github.com/onsi/ginkgo v1.14.1
