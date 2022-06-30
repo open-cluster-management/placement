@@ -50,7 +50,7 @@ And then deploy placement manager on the cluster.
 make deploy-hub
 ```
 
-### What is next
+### What is next？
 After a successful deployment, check on the cluster and see the placement controller has been deployed.
 ```
 kubectl -n open-cluster-management-hub get pods
