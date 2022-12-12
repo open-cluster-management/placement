@@ -3,6 +3,9 @@ package integration
 import (
 	"context"
 	"fmt"
+	"sort"
+	"time"
+
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -15,8 +18,6 @@ import (
 	clusterapiv1beta1 "open-cluster-management.io/api/cluster/v1beta1"
 	clusterapiv1beta2 "open-cluster-management.io/api/cluster/v1beta2"
 	"open-cluster-management.io/placement/test/integration/util"
-	"sort"
-	"time"
 )
 
 func assertPlacementDecisionCreated(placement *clusterapiv1beta1.Placement) {
@@ -209,16 +210,17 @@ func assertCreatingClusterSet(clusterSetName string, labels ...string) {
 			Name:   clusterSetName,
 			Labels: map[string]string{},
 		},
-		Spec: clusterapiv1beta2.ManagedClusterSetSpec{},
+		Spec: clusterapiv1beta2.ManagedClusterSetSpec{
+			ClusterSelector: clusterapiv1beta2.ManagedClusterSelector{
+				SelectorType: clusterapiv1beta2.LabelSelector,
+				LabelSelector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{},
+				},
+			},
+		},
 	}
 
 	if len(labels) > 0 {
-		clusterset.Spec.ClusterSelector = clusterapiv1beta2.ManagedClusterSelector{
-			SelectorType: clusterapiv1beta2.LabelSelector,
-			LabelSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{},
-			},
-		}
 		for i := 1; i < len(labels); i += 2 {
 			clusterset.Spec.ClusterSelector.LabelSelector.MatchLabels[labels[i-1]] = labels[i]
 		}
@@ -290,8 +292,16 @@ func assertCreatingClusters(clusterSetName string, num int, labels ...string) []
 			cluster.Labels[labels[i-1]] = labels[i]
 		}
 		cluster, err := clusterClient.ClusterV1().ManagedClusters().Create(context.Background(), cluster, metav1.CreateOptions{})
-		names = append(names, cluster.Name)
 		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		cluster.Status.Conditions = []metav1.Condition{}
+		for i := 1; i < len(labels); i += 2 {
+			cluster.Status.ClusterClaims = append(cluster.Status.ClusterClaims, clusterapiv1.ManagedClusterClaim{Name: labels[i-1], Value: labels[i]})
+		}
+		_, err = clusterClient.ClusterV1().ManagedClusters().UpdateStatus(context.Background(), cluster, metav1.UpdateOptions{})
+		gomega.Expect(err).ToNot(gomega.HaveOccurred())
+
+		names = append(names, cluster.Name)
 	}
 
 	sort.SliceStable(names, func(i, j int) bool {
@@ -299,6 +309,20 @@ func assertCreatingClusters(clusterSetName string, num int, labels ...string) []
 	})
 
 	return names
+}
+
+func assertCleanupClusters() []string {
+	ginkgo.By("Cleanup all managed clusters")
+	var clusterNames []string
+	clusters, err := clusterClient.ClusterV1().ManagedClusters().List(context.Background(), metav1.ListOptions{})
+	gomega.Expect(err).ToNot(gomega.HaveOccurred())
+	for _, cluster := range clusters.Items {
+		clusterNames = append(clusterNames, cluster.Name)
+	}
+
+	assertDeletingClusters(clusterNames...)
+
+	return clusterNames
 }
 
 func assertUpdatingClusterWithClusterResources(managedClusterName string, res []string) {
