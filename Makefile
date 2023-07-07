@@ -1,5 +1,7 @@
 SHELL :=/bin/bash
 
+export CGO_ENABLED  = 1
+
 all: build
 .PHONY: all
 
